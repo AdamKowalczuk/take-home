@@ -1,52 +1,73 @@
-import { useEffect, useState } from "react";
-import { ListItem, useGetListData } from "../api/getListData";
-import { Card } from "./List";
-import { Spinner } from "./Spinner";
+import { useEffect } from 'react';
+import { useGetListData } from '../api/getListData';
+import { Card } from './Card';
+import { Spinner } from './Spinner';
+import { useCardStore } from '../store/useCardStore';
+import { ToggleButton } from './ToggleButton';
 
 export const Entrypoint = () => {
-  const [visibleCards, setVisibleCards] = useState<ListItem[]>([]);
-  const listQuery = useGetListData();
+  const {
+    deletedCards,
+    toggleShowDeleted,
+    showDeleted,
+    visibleCards,
+    setVisibleCards,
+  } = useCardStore();
 
-  // TOOD
-  // const deletedCards: DeletedListItem[] = [];
+  const { data, isLoading, refetch, isFetching } = useGetListData();
 
   useEffect(() => {
-    if (listQuery.isLoading) {
-      return;
+    if (data) {
+      setVisibleCards(data.filter((item) => item.isVisible) ?? []);
     }
+  }, [data, setVisibleCards]);
 
-    setVisibleCards(listQuery.data?.filter((item) => item.isVisible) ?? []);
-  }, [listQuery.data, listQuery.isLoading]);
-
-  if (listQuery.isLoading) {
+  if (isLoading) {
     return <Spinner />;
   }
 
   return (
     <div className="flex gap-x-16">
       <div className="w-full max-w-xl">
-        <h1 className="mb-1 font-medium text-lg">My Awesome List ({visibleCards.length})</h1>
+        <h1 className="mb-1 font-medium text-lg">
+          My Awesome List ({visibleCards.length})
+        </h1>
         <div className="flex flex-col gap-y-3">
           {visibleCards.map((card) => (
-            <Card key={card.id} title={card.title} description={card.description} />
+            <Card
+              key={card.id}
+              id={card.id}
+              title={card.title}
+              description={card.description}
+            />
           ))}
         </div>
       </div>
       <div className="w-full max-w-xl">
         <div className="flex items-center justify-between">
-          <h1 className="mb-1 font-medium text-lg">Deleted Cards (0)</h1>
-          <button
-            disabled
-            className="text-white text-sm transition-colors hover:bg-gray-800 disabled:bg-black/75 bg-black rounded px-3 py-1"
-          >
-            Reveal
-          </button>
+          <h1 className="mb-1 font-medium text-lg">
+            Deleted Cards ({deletedCards.length})
+          </h1>
+          <ToggleButton
+            isToggled={showDeleted}
+            onToggle={toggleShowDeleted}
+            activeLabel="Hide"
+            inactiveLabel="Reveal"
+          />
+          <ToggleButton
+            isToggled={isFetching}
+            onToggle={refetch}
+            activeLabel="Refreshing..."
+            inactiveLabel="Refresh"
+          />
         </div>
-        <div className="flex flex-col gap-y-3">
-          {/* {deletedCards.map((card) => (
-            <Card key={card.id} card={card} />
-          ))} */}
-        </div>
+        {showDeleted && (
+          <div className="flex flex-col gap-y-3">
+            {deletedCards.map((card) => (
+              <Card key={card.id} id={card.id} title={card.title} isDeleted />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

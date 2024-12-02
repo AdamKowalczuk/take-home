@@ -32,3 +32,11 @@
 
 You may leave a message explaining your coding choices, but it's not necessary.
 Testing framework isn't installed, so instead just explain whether you think it's a good or bad idea to write tests for this feature or how to approach it.
+
+### My answer
+
+We should test functions such as deleteCard, toggleExpand, and revertCard to ensure the state updates correctly.
+
+We should verify that cards render properly based on visibleCards and deletedCards.
+
+We should confirm that expandedCards and deletedCards persist after a page refresh.
